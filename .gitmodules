@@ -1,0 +1,3 @@
+[submodule "lapack_legacy_3.5.0"]
+	path = lapack_legacy_3.5.0
+	url = ssh://git@mybioinformaticslab.xyz:7999/rob/lapack_legacy_3.5.0.git
