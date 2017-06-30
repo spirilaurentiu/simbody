@@ -16,6 +16,7 @@ obj-*
 .*.swo
 # gedit
 *~
-#build-release
+build-release
+build-debug
 build-debug/*
 !build-debug/CMakeCache.txt
