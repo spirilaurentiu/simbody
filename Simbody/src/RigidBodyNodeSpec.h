@@ -419,6 +419,14 @@ void multiplyByMInvPass2Outward(
     SpatialVec*                 allA_GB,
     Real*                       allUDot) const override;
 
+void multiplyBySqrtMInvPassOutward(
+    const SBInstanceCache&      ic,
+    const SBTreePositionCache&  pc,
+    const SBArticulatedBodyInertiaCache&,
+    const Real*                 epsilonTmp,
+    SpatialVec*                 allV_GB,
+    Real*                       allU) const override;
+
 // Also serves as pass 1 for inverse dynamics.
 void calcBodyAccelerationsFromUdotOutward(
     const SBTreePositionCache&  pc,

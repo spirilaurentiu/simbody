@@ -261,6 +261,20 @@ public:
         allA_GB[0] = 0;
     }
 
+    // Outward pass must make sure V_GB[0] is zero so it can be propagated
+    // outwards properly.
+    void multiplyBySqrtMInvPassOutward(
+        const SBInstanceCache&,
+        const SBTreePositionCache&,
+        const SBArticulatedBodyInertiaCache&,
+        const Real*                 epsilonTmp,
+        SpatialVec*                 allV_GB,
+        Real*                       allU) const override
+    {
+        allV_GB[0] = 0;
+    }
+    
+
     // Also serves as pass 1 for inverse dynamics.
     void calcBodyAccelerationsFromUdotOutward(
         const SBTreePositionCache&  pc,
@@ -563,6 +577,26 @@ public:
 
         A_GB = APlus;
     }
+
+    // Must set V_GB properly for propagation to children.
+    void multiplyBySqrtMInvPassOutward(
+        const SBInstanceCache&,
+        const SBTreePositionCache&  pc,
+        const SBArticulatedBodyInertiaCache&,
+        const Real*                 allEpsilon,
+        SpatialVec*                 allV_GB,
+        Real*                       allU) const override
+    {
+        SpatialVec&      V_GB = allV_GB[nodeNum];
+        const PhiMatrix& phi  = getPhi(pc);
+
+        // Shift parent's acceleration outward (Ground==0). 12 flops
+        const SpatialVec& V_GP  = allV_GB[parent->getNodeNum()];
+        const SpatialVec  VPlus = ~phi * V_GP;
+
+        V_GB = VPlus;
+    }
+
 
     // Also serves as pass 1 for inverse dynamics.
     void calcBodyAccelerationsFromUdotOutward(

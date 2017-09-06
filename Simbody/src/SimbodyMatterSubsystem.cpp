@@ -470,6 +470,53 @@ void SimbodyMatterSubsystem::multiplyByMInv(const State&    state,
         MInvV = *cMInvV;
 }
 
+//==============================================================================
+//                           MULTIPLY BY SQRT M INV
+//==============================================================================
+// Check arguments, copy in/out of contiguous Vectors if necessary, call the
+// implementation method to calculate u = sqrt(M^-1)*v.
+void SimbodyMatterSubsystem::multiplyBySqrtMInv(const State&    state,
+                                                const Vector&   v,
+                                                Vector&         sqrtMinvV) const
+{
+    const SimbodyMatterSubsystemRep& rep = getRep();
+    const int nu = rep.getNU(state);
+
+    SimTK_ERRCHK2_ALWAYS(v.size() == nu,
+        "SimbodyMatterSubsystem::multiplyBySqrtMInv()",
+        "Argument 'v' had length %d but should have the same length"
+        " as the number of mobilities (generalized speeds u) %d.",
+        v.size(), nu);
+
+    sqrtMinvV.resize(nu);
+    if (nu==0) return;
+
+    // Assume at first that both Vectors are contiguous.
+    const Vector* cv    = &v;
+    Vector*       csqrtMinvV   = &sqrtMinvV;
+    bool needToCopyBack = false;
+
+    // We'll allocate these or not as needed.
+    Vector contig_v, contig_sqrtMinvV;
+
+    if (!v.hasContiguousData()) {
+        contig_v.resize(nu); // contiguous memory
+        contig_v(0, nu) = v; // copy, prevent reallocation
+        cv = (const Vector*)&contig_v;
+    }
+
+    if (!sqrtMinvV.hasContiguousData()) {
+        contig_sqrtMinvV.resize(nu); // contiguous memory
+        csqrtMinvV = (Vector*)&contig_sqrtMinvV;
+        needToCopyBack = true;
+    }
+
+    rep.multiplyBySqrtMInv(state, *cv, *csqrtMinvV);
+
+    if (needToCopyBack)
+        sqrtMinvV = *csqrtMinvV;
+}
+
 
 
 void SimbodyMatterSubsystem::calcM(const State& s, Matrix& M) const 

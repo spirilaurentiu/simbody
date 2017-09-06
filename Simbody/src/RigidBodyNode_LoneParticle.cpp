@@ -358,6 +358,28 @@ void multiplyByMInvPass2Outward(
     }
 }
 
+void multiplyBySqrtMInvPassOutward(
+        const SBInstanceCache&                  ic,
+        const SBTreePositionCache&              pc,
+        const SBArticulatedBodyInertiaCache&    abc,
+        const Real*                             allEpsilon,
+        SpatialVec*                             allV_GB,
+        Real*                                   allU) const override
+{
+    const bool isPrescribed = isUKnown(ic);
+    const Vec3& eps = Vec3::getAs(&allEpsilon[uIndex]);
+    SpatialVec& V_GB = allV_GB[nodeNum];
+    Vec3&       u = Vec3::updAs(&allU[uIndex]);
+
+    if (isPrescribed) {
+        u = 0;
+        V_GB = SpatialVec(Vec3(0), Vec3(0));
+    } else {
+        u = eps/getMass();
+        V_GB = SpatialVec(Vec3(0), u);
+    }
+}
+
 // Also serves as pass 1 for inverse dynamics.
 void calcBodyAccelerationsFromUdotOutward(
         const SBTreePositionCache&  pc,

@@ -552,6 +552,82 @@ RigidBodyNodeSpec<dof, noR_FM, noX_MB, noR_PF>::multiplyByMInvPass2Outward(
 }
 
 
+// Base to tip recursion for multiplyBySqrtMInv: 
+// temp allV_GB does not need to be initialized before
+// beginning the iteration.
+template<int dof, bool noR_FM, bool noX_MB, bool noR_PF> void
+RigidBodyNodeSpec<dof, noR_FM, noX_MB, noR_PF>::multiplyBySqrtMInvPassOutward(
+    const SBInstanceCache&                  ic,
+    const SBTreePositionCache&              pc,
+    const SBArticulatedBodyInertiaCache&    abc,
+    const Real*                             allEpsilon,
+    SpatialVec*                             allV_GB,
+    Real*                                   allU) const
+{
+    const Vec<dof>& eps  = fromU(allEpsilon);
+    SpatialVec&     V_GB = allV_GB[nodeNum];
+    Vec<dof>&       u    = toU(allU); // pull out this node's u
+
+    const bool isPrescribed = isUKnown(ic);
+    const HType&        H   = getH(pc);
+    const PhiMatrix&    phi = getPhi(pc);
+    const Mat<dof,dof>& DI  = getDI(abc);
+
+    const HType&              G = getG(abc);
+
+    // DI Cholesky Decomposition: 
+    int i, j, k;
+    Mat<dof,dof> sqrtDI(1);
+    if(dof>1){
+      double s1, s2;
+      Mat<dof,dof> L(0);
+      Mat<dof,dof> De(0);
+
+      for(j=0; j<dof; j++){
+        L(j,j) = 1.0;
+        // Diagonal
+        s1 = 0.0;
+        for(k=0; k<dof; k++){
+          s1 += (L(j,k) * L(j,k)) * De(k,k);
+        }
+        De(j,j) = DI(j,j) - s1;
+        // Off diagonal
+        for(i=(j+1); i<dof; i++){
+          s2 = 0.0;
+          for(k=0; k<j; k++){
+            s2 += L(i,k) * L(j,k) * De(k,k);
+          }
+          L(i,j) = (1 / De(j,j)) * (DI(i,j) - s2);
+        }
+      }
+
+      // Square root the diagonal
+      for(j=0; j<dof; j++){De(j,j) = sqrt(De(j,j));}
+
+      // Get LsqrtDe
+      sqrtDI = L *  De ;
+    }
+    else{
+      sqrtDI(0,0) = sqrt(DI(0,0));
+    }
+    // END Cholesky Decomposition
+
+    // Shift parent's acceleration outward (Ground==0). 12 flops
+    const SpatialVec& V_GP  = allV_GB[parent->getNodeNum()];
+    const SpatialVec  VPlus = ~phi * V_GP;
+
+    // For a prescribed mobilizer, set u==0.
+    if (isPrescribed) {
+        u = 0;
+        V_GB = VPlus;
+    } else {
+        u = sqrtDI*eps - ~G*VPlus;   // 2dof^2 + 11 dof flops
+        V_GB = VPlus + H*u;      // 12 dof flops
+    }
+}
+
+
+
 
 //==============================================================================
 //                     CALC BODY ACCELERATIONS FROM UDOT
