@@ -1430,6 +1430,11 @@ void multiplyBySqrtMInv(const State&  state,
                         const Vector& v,
                         Vector&       sqrtMinvV) const;    
 
+void calcDetM(const State& state,
+    const Vector&               v,
+    Vector&                     MinvV,
+    Matrix&                     D0) const;
+
 
 /** This operator explicitly calculates the n X n mass matrix M. Note that this
 is inherently an O(n^2) operation since the mass matrix has n^2 elements 

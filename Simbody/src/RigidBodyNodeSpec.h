@@ -427,6 +427,29 @@ void multiplyBySqrtMInvPassOutward(
     SpatialVec*                 allV_GB,
     Real*                       allU) const override;
 
+void calcDetMPass1Inward(
+    const SBInstanceCache&      ic,
+    const SBTreePositionCache&  pc,
+    const SBArticulatedBodyInertiaCache&,
+    const SBDynamicsCache&      dc,
+    const Real*                 f,
+    SpatialVec*                 allZ,
+    SpatialVec*                 allGepsilon,
+    Real*                       allEpsilon,
+    Matrix&                     D0) const;
+
+void calcDetMPass2Outward(
+    const SBInstanceCache&      ic,
+    const SBTreePositionCache&  pc,
+    const SBArticulatedBodyInertiaCache&,
+    const SBDynamicsCache&      dc,
+    const Real*                 epsilonTmp,
+    SpatialVec*                 allA_GB,
+    Real*                       allUDot,
+    Matrix&                     D0) const;
+
+
+
 // Also serves as pass 1 for inverse dynamics.
 void calcBodyAccelerationsFromUdotOutward(
     const SBTreePositionCache&  pc,

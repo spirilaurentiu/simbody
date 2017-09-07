@@ -626,6 +626,106 @@ RigidBodyNodeSpec<dof, noR_FM, noX_MB, noR_PF>::multiplyBySqrtMInvPassOutward(
     }
 }
 
+// Pass 1 of calcDetM , to be called from tip to base.
+template<int dof, bool noR_FM, bool noX_MB, bool noR_PF> void
+RigidBodyNodeSpec<dof, noR_FM, noX_MB, noR_PF>::calcDetMPass1Inward(
+    const SBInstanceCache&                  ic,
+    const SBTreePositionCache&              pc,
+    const SBArticulatedBodyInertiaCache&    abc,
+    const SBDynamicsCache&                  dc,
+    const Real*                             jointForces,
+    SpatialVec*                             allZ,
+    SpatialVec*                             allZPlus,
+    Real*                                   allEpsilon,
+    Matrix&                                 D0) const
+{
+    const Vec<dof>&   f     = fromU(jointForces);
+    SpatialVec&       z     = allZ[nodeNum];
+    SpatialVec&       zPlus = allZPlus[nodeNum];
+    Vec<dof>&         eps   = toU(allEpsilon);
+
+    int i, j ,k; // EU
+
+    const bool isPrescribed = isUDotKnown(ic);
+    const HType&              H = getH(pc);
+    const HType&              G = getG(abc);
+
+    z = 0;
+
+}
+
+
+// Pass 2 of calcDetM.
+// Base to tip: temp allA_GB does not need to be initialized before
+// beginning the iteration.
+template<int dof, bool noR_FM, bool noX_MB, bool noR_PF> void 
+RigidBodyNodeSpec<dof, noR_FM, noX_MB, noR_PF>::calcDetMPass2Outward(
+    const SBInstanceCache&                  ic,
+    const SBTreePositionCache&              pc,
+    const SBArticulatedBodyInertiaCache&    abc,
+    const SBDynamicsCache&                  dc,
+    const Real*                             allEpsilon,
+    SpatialVec*                             allA_GB,
+    Real*                                   allUDot,
+    Matrix&                                 D0) const
+{
+    const Vec<dof>& eps  = fromU(allEpsilon);
+    SpatialVec&     A_GB = allA_GB[nodeNum];
+    Vec<dof>&       udot = toU(allUDot); // pull out this node's udot
+
+    const bool isPrescribed = isUDotKnown(ic);
+    const HType&        H   = getH(pc);
+    const PhiMatrix&    phi = getPhi(pc);
+    const Mat<dof,dof>& DI  = getDI(abc);
+
+    const Mat<dof,dof>& D  = getD(abc);
+    if(dof == 6){
+      D0[0][0] = D[0][0]; D0[0][1] = D[0][1]; D0[0][2] = D[0][2]; D0[0][3] = D[0][3]; D0[0][4] = D[0][4]; D0[0][5] = D[0][5];
+      D0[1][0] = D[1][0]; D0[1][1] = D[1][1]; D0[1][2] = D[1][2]; D0[1][3] = D[1][3]; D0[1][4] = D[1][4]; D0[1][5] = D[1][5];
+      D0[2][0] = D[2][0]; D0[2][1] = D[2][1]; D0[2][2] = D[2][2]; D0[2][3] = D[2][3]; D0[2][4] = D[2][4]; D0[2][5] = D[2][5];
+      D0[3][0] = D[3][0]; D0[3][1] = D[3][1]; D0[3][2] = D[3][2]; D0[3][3] = D[3][3]; D0[3][4] = D[3][4]; D0[3][5] = D[3][5];
+      D0[4][0] = D[4][0]; D0[4][1] = D[4][1]; D0[4][2] = D[4][2]; D0[4][3] = D[4][3]; D0[4][4] = D[4][4]; D0[4][5] = D[4][5];
+      D0[5][0] = D[5][0]; D0[5][1] = D[5][1]; D0[5][2] = D[5][2]; D0[5][3] = D[5][3]; D0[5][4] = D[5][4]; D0[5][5] = D[5][5];
+      //std::cout<<D0<<std::endl;
+      //std::cout<<"----"<<std::endl;
+    }
+    else{
+        udot = getD(abc)[0][0];
+        //std::cout<<udot<<std::endl;
+        //std::cout<<"===="<<std::endl;
+    }
+
+    int i, j, k;
+    
+    Mat<dof,dof> sqrtDI(1);
+    // Babylonian method with fixed # of iters
+    if(dof>1){
+      for(int i=0; i<5; i++){
+        sqrtDI = 0.5*(sqrtDI + DI*(sqrtDI.invert()));
+      }
+    }
+    else{
+      sqrtDI(0,0) = sqrt(DI(0,0));
+    }
+
+    const HType&        G   = getG(abc);
+
+    // Shift parent's acceleration outward (Ground==0). 12 flops
+    const SpatialVec& A_GP  = allA_GB[parent->getNodeNum()]; 
+    const SpatialVec  APlus = ~phi * A_GP;
+
+    // For a prescribed mobilizer, set udot==0.
+    if (isPrescribed) {
+        //udot = 0;
+        //A_GB = APlus;
+    } else {
+        //udot = sqrtDI*eps - ~G*APlus;   // 2dof^2 + 11 dof flops
+        //A_GB = APlus + H*udot;      // 12 dof flops
+    }
+}
+
+
+
 
 
 

@@ -5450,6 +5450,61 @@ void SimbodyMatterSubsystemRep::multiplyBySqrtMInv(const State& s,
 }
 
 
+//==============================================================================
+//                               CALC DET M INVERSE ?? 
+//==============================================================================
+// Calculate udot = M^-1 f. We also get spatial accelerations A_GB for 
+// each body as a side effect.
+// This Subsystem must already be realized through Dynamics stage.
+// All vectors must use contiguous storage.
+void SimbodyMatterSubsystemRep::calcDetM(const State& s,
+    const Vector&                                           f,
+    Vector&                                                 MInvf,
+    Matrix&                                                 D0) const 
+{
+    const SBInstanceCache&                  ic  = getInstanceCache(s);
+    const SBTreePositionCache&              tpc = getTreePositionCache(s);
+    const SBDynamicsCache&                  dc  = getDynamicsCache(s);
+    const SBArticulatedBodyInertiaCache&    abc = getArticulatedBodyInertiaCache(s);
+
+    const int nb = getNumBodies();
+    const int nu = getNU(s);
+
+    int i, j, k;
+
+    assert(f.size() == nu);
+
+    MInvf.resize(nu);
+    D0.resize(6, 6);
+    if (nu==0)
+        return;
+
+    assert(f.hasContiguousData());
+    assert(MInvf.hasContiguousData());
+
+    // Temporaries
+    Array_<Real>        eps(nu);
+    Array_<SpatialVec>  z(nb), zPlus(nb), A_GB(nb);
+
+    // Point to raw data of input arguments.
+    const Real* fPtr     = &f[0];       
+    Real*       MInvfPtr = &MInvf[0];
+
+    for(int i=0; i<nu; i++){eps[i] = fPtr[i];}
+
+    for (int i=0 ; i<(int)rbNodeLevels.size() ; i++){
+        for (int j=0 ; j<(int)rbNodeLevels[i].size() ; j++) {
+            const RigidBodyNode& node = *rbNodeLevels[i][j];
+            //std::cout<<"calcDetM node["<<i<<"]["<<j<<']'<<std::endl;
+            node.calcDetMPass2Outward(ic,tpc,abc,dc, 
+                eps.cbegin(), A_GB.begin(), MInvfPtr, D0);
+        }
+    }
+
+}
+//.............................    CALC DET M  ...............................
+
+
 
 
 //==============================================================================
