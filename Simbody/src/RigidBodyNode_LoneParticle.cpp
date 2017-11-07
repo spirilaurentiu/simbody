@@ -391,7 +391,7 @@ void calcDetMPass1Inward(
         SpatialVec*                             allZ,
         SpatialVec*                             allZPlus,
         Real*                                   allEpsilon,
-        Matrix&                                 D0) const 
+        Real*                                   detM) const 
 {
     if (isUDotKnown(ic)) // prescribed
         return;
@@ -413,7 +413,7 @@ void calcDetMPass2Outward(
         const Real*                             allEpsilon,
         SpatialVec*                             allA_GB,
         Real*                                   allUDot, 
-        Matrix&                                 D0) const 
+        Real*                                   detM) const 
 {
     const bool isPrescribed = isUDotKnown(ic);
     const Vec3& eps = Vec3::getAs(&allEpsilon[uIndex]);

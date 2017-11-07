@@ -5458,9 +5458,9 @@ void SimbodyMatterSubsystemRep::multiplyBySqrtMInv(const State& s,
 // This Subsystem must already be realized through Dynamics stage.
 // All vectors must use contiguous storage.
 void SimbodyMatterSubsystemRep::calcDetM(const State& s,
-    const Vector&                                           f,
-    Vector&                                                 MInvf,
-    Matrix&                                                 D0) const 
+    const Vector&                                     f,
+    Vector&                                           MInvf,
+    Real*                                             detM) const 
 {
     const SBInstanceCache&                  ic  = getInstanceCache(s);
     const SBTreePositionCache&              tpc = getTreePositionCache(s);
@@ -5475,7 +5475,6 @@ void SimbodyMatterSubsystemRep::calcDetM(const State& s,
     assert(f.size() == nu);
 
     MInvf.resize(nu);
-    D0.resize(6, 6);
     if (nu==0)
         return;
 
@@ -5492,12 +5491,15 @@ void SimbodyMatterSubsystemRep::calcDetM(const State& s,
 
     for(int i=0; i<nu; i++){eps[i] = fPtr[i];}
 
+    *detM = 1.0;
     for (int i=0 ; i<(int)rbNodeLevels.size() ; i++){
         for (int j=0 ; j<(int)rbNodeLevels[i].size() ; j++) {
             const RigidBodyNode& node = *rbNodeLevels[i][j];
-            //std::cout<<"calcDetM node["<<i<<"]["<<j<<']'<<std::endl;
+            //std::cout<<"calcDetM node["<<i<<"]["<<j<<"] START " << std::endl;
             node.calcDetMPass2Outward(ic,tpc,abc,dc, 
-                eps.cbegin(), A_GB.begin(), MInvfPtr, D0);
+                eps.cbegin(), A_GB.begin(), MInvfPtr, detM);
+            //std::cout<<"calcDetM node["<<i<<"]["<<j<<"]";
+            //std::cout<<" detM "<< *detM << " END" << std::endl;
         }
     }
 

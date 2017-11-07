@@ -607,9 +607,9 @@ public:
     // non-prescribed submatrix Mrr of M; entries f_p in f are not accessed,
     // and entries MInvf_p in MInvf are not written.
     void calcDetM(const State&    s,
-        const Vector&                   f,
-        Vector&                         MInvf,
-        Matrix&                         D0) const; // EU
+        const Vector&             f,
+        Vector&                   MInvf,
+        Real*                     detM) const; // EU
 
     // Calculate the mass matrix in O(n^2) time. State must have already
     // been realized to Position stage. M must be resizeable or already the

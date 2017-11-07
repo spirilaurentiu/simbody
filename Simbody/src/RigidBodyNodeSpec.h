@@ -436,7 +436,7 @@ void calcDetMPass1Inward(
     SpatialVec*                 allZ,
     SpatialVec*                 allGepsilon,
     Real*                       allEpsilon,
-    Matrix&                     D0) const;
+    Real*                       detM) const;
 
 void calcDetMPass2Outward(
     const SBInstanceCache&      ic,
@@ -446,7 +446,7 @@ void calcDetMPass2Outward(
     const Real*                 epsilonTmp,
     SpatialVec*                 allA_GB,
     Real*                       allUDot,
-    Matrix&                     D0) const;
+    Real*                       detM) const;
 
 
 

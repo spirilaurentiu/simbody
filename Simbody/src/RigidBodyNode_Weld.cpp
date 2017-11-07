@@ -283,7 +283,7 @@ public:
         SpatialVec*                allZ,
         SpatialVec*                allZPlus,
         Real*                      allEpsilon,
-        Matrix&                    D0) const
+        Real*                      detM) const
     {
     } 
 
@@ -298,7 +298,7 @@ public:
         const Real*                 epsilonTmp,
         SpatialVec*                 allA_GB,
         Real*                       allUDot,
-        Matrix&                     D0) const
+        Real*                       detM) const
     {
         allA_GB[0] = 0;
     }
@@ -638,7 +638,7 @@ public:
         SpatialVec*                 allZ,
         SpatialVec*                 allZPlus,
         Real*                       allEpsilon,
-        Matrix&                     D0) const
+        Real*                       detM) const
     {
         SpatialVec& z       = allZ[nodeNum];
         SpatialVec& zPlus   = allZPlus[nodeNum];
@@ -663,7 +663,7 @@ public:
         const Real*                 allEpsilon,
         SpatialVec*                 allA_GB,
         Real*                       allUDot,
-        Matrix&                     D0) const
+        Real*                       detM) const
     {
         SpatialVec&      A_GB = allA_GB[nodeNum];
         const PhiMatrix& phi  = getPhi(pc);

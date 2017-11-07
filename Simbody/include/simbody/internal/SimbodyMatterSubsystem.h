@@ -1430,10 +1430,10 @@ void multiplyBySqrtMInv(const State&  state,
                         const Vector& v,
                         Vector&       sqrtMinvV) const;    
 
-void calcDetM(const State& state,
-    const Vector&               v,
-    Vector&                     MinvV,
-    Matrix&                     D0) const;
+void calcDetM(const State&    state,
+    const Vector&             v,
+    Vector&                   MinvV,
+    Real*                     detM) const;
 
 
 /** This operator explicitly calculates the n X n mass matrix M. Note that this

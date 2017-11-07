@@ -525,7 +525,7 @@ void SimbodyMatterSubsystem::multiplyBySqrtMInv(const State&    state,
 void SimbodyMatterSubsystem::calcDetM(const State&          state,
                                             const Vector&   f,
                                             Vector&         MInvf,
-                                            Matrix&         D0) const
+                                            Real*           detM) const
 {
     const SimbodyMatterSubsystemRep& rep = getRep();
     const int nu = rep.getNU(state);
@@ -559,10 +559,11 @@ void SimbodyMatterSubsystem::calcDetM(const State&          state,
         needToCopyBack = true;
     }
 
-    rep.calcDetM(state, *cf, *cMInvf, D0);
+    rep.calcDetM(state, *cf, *cMInvf, detM);
 
     if (needToCopyBack)
         MInvf = *cMInvf;
+ 
 }
 
 
