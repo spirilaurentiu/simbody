@@ -632,7 +632,7 @@ RigidBodyNodeSpec<dof, noR_FM, noX_MB, noR_PF>::calcDetMPass1Inward(
     const SBInstanceCache&                  ic,
     const SBTreePositionCache&              pc,
     const SBArticulatedBodyInertiaCache&    abc,
-    const SBDynamicsCache&                  dc,
+    //const SBDynamicsCache&                  dc,
     const Real*                             jointForces,
     SpatialVec*                             allZ,
     SpatialVec*                             allZPlus,
@@ -644,7 +644,7 @@ RigidBodyNodeSpec<dof, noR_FM, noX_MB, noR_PF>::calcDetMPass1Inward(
     SpatialVec&       zPlus = allZPlus[nodeNum];
     Vec<dof>&         eps   = toU(allEpsilon);
 
-    int i, j ,k; // EU
+    //int i, j ,k; // EU
 
     const bool isPrescribed = isUDotKnown(ic);
     const HType&              H = getH(pc);
@@ -663,7 +663,7 @@ RigidBodyNodeSpec<dof, noR_FM, noX_MB, noR_PF>::calcDetMPass2Outward(
     const SBInstanceCache&                  ic,
     const SBTreePositionCache&              pc,
     const SBArticulatedBodyInertiaCache&    abc,
-    const SBDynamicsCache&                  dc,
+    //const SBDynamicsCache&                  dc,
     const Real*                             allEpsilon,
     SpatialVec*                             allA_GB,
     Real*                                   allUDot,
