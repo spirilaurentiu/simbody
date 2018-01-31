@@ -253,6 +253,7 @@ realizeArticulatedBodyInertiasInward(
     const SBTreePositionCache&      pc,
     SBArticulatedBodyInertiaCache&  abc) const 
 {
+    STUDYN("  RigidBodyNodeSpec::realizeArticulatedBodyInertiasInward tip-to-base Mk,Phi,H -> P,PPlus,D,DI,G");
     ArticulatedInertia& P = updP(abc);
 
     // Start with the spatial inertia of the current body (in Ground frame).
@@ -278,6 +279,8 @@ realizeArticulatedBodyInertiasInward(
         // This takes 93 flops (72 for the shift and 21 to add it in).
         // (Note that PPlusChild==PChild if child's mobilizer is prescribed.)
         P += PPlusChild.shift(phiChild.l());
+        STUDYN("  RigidBodyNodeSpec::realizeArticulatedBodyInertiasInward P = Phi * P+ * ~Phi + Mk");
+
     }
 
     // Now compute PPlus. P+ = P for a prescribed mobilizer. Otherwise
@@ -300,10 +303,12 @@ realizeArticulatedBodyInertiasInward(
 
     const HType PH = P*H;   // 66*dof   flops
     D  = ~H * PH;           // 11*dof^2 flops (symmetric result)
+    STUDYN("  RigidBodyNodeSpec::realizeArticulatedBodyInertiasInward D = HP~H");
 
     // this will throw an exception if the matrix is ill conditioned
     DI = D.invert();                        // ~dof^3 flops (symmetric)
     G  = PH * DI;                           // 12*dof^2-6*dof flops
+    STUDYN("  RigidBodyNodeSpec::realizeArticulatedBodyInertiasInward G = PH / D");
 
     // Want P+ = P - G*~PH. We can do this in about 55*dof flops.
     // These require 9 dot products of length dof. The symmetric ones could
@@ -322,6 +327,7 @@ realizeArticulatedBodyInertiasInward(
         (inertia(1,0)+inertia(0,1))/2,  inertia(1,1), 
         (inertia(2,0)+inertia(0,2))/2, (inertia(2,1)+inertia(1,2))/2, inertia(2,2));
     PPlus = P - ArticulatedInertia(symMass, massMoment, symInertia); // 21 flops
+    STUDYN("  RigidBodyNodeSpec::realizeArticulatedBodyInertiasInward P+ = P - G*~PH");
 }
 
 
@@ -365,6 +371,7 @@ RigidBodyNodeSpec<dof, noR_FM, noX_MB, noR_PF>::calcUDotPass1Inward(
     SpatialVec*                             allZPlus,
     Real*                                   allEpsilon) const 
 {
+    STUDYN("  RigidBodyNodeSpec::calcUDotPass1Inward tip-to-base P,Phi,H,G, F,f,udot_p -> z,zPlus,eps");
     const Vec<dof>&   f     = fromU(jointForces);
     const SpatialVec& F     = bodyForces[nodeNum];
     SpatialVec&       z     = allZ[nodeNum];
@@ -417,6 +424,7 @@ RigidBodyNodeSpec<dof, noR_FM, noX_MB, noR_PF>::calcUDotPass2Outward(
     Real*                                   allUDot,
     Real*                                   allTau) const
 {
+    STUDYN("  RigidBodyNodeSpec::calcUDotPass2Outward base-to-tip accelerations APlus,udot,A_GB");
     const Vec<dof>& eps  = fromU(allEpsilon);
     SpatialVec&     A_GB = allA_GB[nodeNum];
     Vec<dof>&       udot = toU(allUDot);    // pull out this node's udot
@@ -490,6 +498,7 @@ RigidBodyNodeSpec<dof, noR_FM, noX_MB, noR_PF>::multiplyByMInvPass1Inward(
     SpatialVec*                             allZPlus,
     Real*                                   allEpsilon) const
 {
+    STUDYN("  RigidBodyNodeSpec::multiplyByMInvPass1Inward tip-to-base");
     const Vec<dof>&   f     = fromU(jointForces);
     SpatialVec&       z     = allZ[nodeNum];
     SpatialVec&       zPlus = allZPlus[nodeNum];
@@ -527,6 +536,7 @@ RigidBodyNodeSpec<dof, noR_FM, noX_MB, noR_PF>::multiplyByMInvPass2Outward(
     SpatialVec*                             allA_GB,
     Real*                                   allUDot) const
 {
+    STUDYN("  RigidBodyNodeSpec::multiplyByMInvPass2Outward");
     const Vec<dof>& eps  = fromU(allEpsilon);
     SpatialVec&     A_GB = allA_GB[nodeNum];
     Vec<dof>&       udot = toU(allUDot); // pull out this node's udot
@@ -564,6 +574,7 @@ RigidBodyNodeSpec<dof, noR_FM, noX_MB, noR_PF>::multiplyBySqrtMInvPassOutward(
     SpatialVec*                             allV_GB,
     Real*                                   allU) const
 {
+    STUDYN("  RigidBodyNodeSpec::multiplyBySqrtMInvPassOutward");
     const Vec<dof>& eps  = fromU(allEpsilon);
     SpatialVec&     V_GB = allV_GB[nodeNum];
     Vec<dof>&       u    = toU(allU); // pull out this node's u
@@ -639,6 +650,7 @@ RigidBodyNodeSpec<dof, noR_FM, noX_MB, noR_PF>::calcDetMPass1Inward(
     Real*                                   allEpsilon,
     Real*                                   detM) const
 {
+    STUDYN("  RigidBodyNodeSpec::calcDetMPass1Inward tip-to-base ");
     const Vec<dof>&   f     = fromU(jointForces);
     SpatialVec&       z     = allZ[nodeNum];
     SpatialVec&       zPlus = allZPlus[nodeNum];
@@ -669,6 +681,7 @@ RigidBodyNodeSpec<dof, noR_FM, noX_MB, noR_PF>::calcDetMPass2Outward(
     Real*                                   allUDot,
     Real*                                   detM) const
 {
+    STUDYN("  RigidBodyNodeSpec::calcDetMPass2Outward base-to-tip");
     const Vec<dof>& eps  = fromU(allEpsilon);
     SpatialVec&     A_GB = allA_GB[nodeNum];
     Vec<dof>&       udot = toU(allUDot); // pull out this node's udot
@@ -681,50 +694,13 @@ RigidBodyNodeSpec<dof, noR_FM, noX_MB, noR_PF>::calcDetMPass2Outward(
     const Mat<dof,dof>& D  = getD(abc);
     //std::cout << "RigidBodyNodeSpec::calcDetMPass2Outward D: "<< D << std::endl;
     (*detM) *= SimTK::det(D);
-    /*
-    if(dof == 6){
-      D0[0][0] = D[0][0]; D0[0][1] = D[0][1]; D0[0][2] = D[0][2]; D0[0][3] = D[0][3]; D0[0][4] = D[0][4]; D0[0][5] = D[0][5];
-      D0[1][0] = D[1][0]; D0[1][1] = D[1][1]; D0[1][2] = D[1][2]; D0[1][3] = D[1][3]; D0[1][4] = D[1][4]; D0[1][5] = D[1][5];
-      D0[2][0] = D[2][0]; D0[2][1] = D[2][1]; D0[2][2] = D[2][2]; D0[2][3] = D[2][3]; D0[2][4] = D[2][4]; D0[2][5] = D[2][5];
-      D0[3][0] = D[3][0]; D0[3][1] = D[3][1]; D0[3][2] = D[3][2]; D0[3][3] = D[3][3]; D0[3][4] = D[3][4]; D0[3][5] = D[3][5];
-      D0[4][0] = D[4][0]; D0[4][1] = D[4][1]; D0[4][2] = D[4][2]; D0[4][3] = D[4][3]; D0[4][4] = D[4][4]; D0[4][5] = D[4][5];
-      D0[5][0] = D[5][0]; D0[5][1] = D[5][1]; D0[5][2] = D[5][2]; D0[5][3] = D[5][3]; D0[5][4] = D[5][4]; D0[5][5] = D[5][5];
-    }
-    else{
-        udot = getD(abc)[0][0];
-    }
-    */
-    //udot = SimTK::det(D);
-    //std::cout << "RigidBodyNodeSpec::calcDetMPass2Outward udot = det(D): "<< udot << std::endl;
 
-    // Babylonian method with fixed # of iters
-    /*
-    int i, j, k;
-    Mat<dof,dof> sqrtDI(1);
-    if(dof>1){
-      for(int i=0; i<5; i++){
-        sqrtDI = 0.5*(sqrtDI + DI*(sqrtDI.invert()));
-      }
-    }
-    else{
-      sqrtDI(0,0) = sqrt(DI(0,0));
-    }
-    */
     const HType&        G   = getG(abc);
 
     // Shift parent's acceleration outward (Ground==0). 12 flops
     const SpatialVec& A_GP  = allA_GB[parent->getNodeNum()]; 
     const SpatialVec  APlus = ~phi * A_GP;
 
-    // For a prescribed mobilizer, set udot==0.
-    //if (isPrescribed) {
-        //udot = 0;
-        //A_GB = APlus;
-    //} else {
-        //udot = sqrtDI*eps - ~G*APlus;   // 2dof^2 + 11 dof flops
-        //A_GB = APlus + H*udot;      // 12 dof flops
-    //}
-    //std::cout << "RigidBodyNodeSpec::calcDetMPass2Outward detM: "<< *detM << std::endl;
 }
 
 
@@ -750,6 +726,7 @@ calcBodyAccelerationsFromUdotOutward(
     const Real*                 allUDot,
     SpatialVec*                 allA_GB) const
 {
+    STUDYN("  RigidBodyNodeSpec::calcBodyAccelerationsFromUdotOutward base-to-tip A_GB = J*udot + Jdot*u");
     const Vec<dof>& udot = fromU(allUDot);
     SpatialVec&     A_GB = allA_GB[nodeNum];
 
@@ -796,6 +773,7 @@ calcInverseDynamicsPass2Inward(
     SpatialVec*                 allF,   // temp
     Real*                       allTau) const 
 {
+    STUDYN("  RigidBodyNodeSpec::calcInverseDynamicsPass2Inward tip-to-base -> F,tau (f = M*udot + C(u) - f_applied)");
     const Vec<dof>&   myJointForce  = fromU(jointForces);
     const SpatialVec& myBodyForce   = bodyForces[nodeNum];
     const SpatialVec& A_GB          = allA_GB[nodeNum];
@@ -817,6 +795,7 @@ calcInverseDynamicsPass2Inward(
     // Project body forces into hinge space and subtract any hinge forces already
     // being applied to get the remaining hinge forces needed.
     tau = ~getH(pc)*F - myJointForce;   // 12*dof flops
+    STUDYN("    RigidBodyNodeSpec::calcInverseDynamicsPass2Inward tip-to-base tau = ~H*F - myJointForce");
 }
 
 
@@ -839,6 +818,7 @@ RigidBodyNodeSpec<dof, noR_FM, noX_MB, noR_PF>::multiplyByMPass1Outward(
     const Real*                 allUDot,
     SpatialVec*                 allA_GB) const
 {
+    STUDYN("  RigidBodyNodeSpec::multiplyByMPass1Outward base-to-tip");
     const Vec<dof>& udot = fromU(allUDot);
     SpatialVec&     A_GB = allA_GB[nodeNum];
 
@@ -857,6 +837,7 @@ RigidBodyNodeSpec<dof, noR_FM, noX_MB, noR_PF>::multiplyByMPass2Inward(
     SpatialVec*                 allF,   // temp
     Real*                       allTau) const 
 {
+    STUDYN("  RigidBodyNodeSpec::multiplyByMPass2Inward tip-to-base get F and tau");
     const SpatialVec& A_GB  = allA_GB[nodeNum];
     SpatialVec&       F     = allF[nodeNum];
     Vec<dof>&         tau   = toU(allTau);
@@ -892,6 +873,7 @@ RigidBodyNodeSpec<dof, noR_FM, noX_MB, noR_PF>::realizeYOutward
     const SBArticulatedBodyInertiaCache&    abc,
     SBDynamicsCache&                        dc) const
 {
+    STUDYN("  RigidBodyNodeSpec::realizeYOutward base-to-tip");
     if (isUDotKnown(ic)) {
         //TODO: (sherm 090810) is this right?
         assert(false);
@@ -943,6 +925,7 @@ multiplyBySystemJacobian(
     const Real*                 v,
     SpatialVec*                 Jv) const
 {
+    STUDYN("  RigidBodyNodeSpec::multiplyBySystemJacobian base-to-tip ~H*Phi*(F-(MA+b))");
     const Vec<dof>& in  = fromU(v);
     SpatialVec&     out = Jv[nodeNum];
 
@@ -977,6 +960,7 @@ multiplyBySystemJacobianTranspose(
     const SpatialVec*           X, 
     Real*                       JtX) const
 {
+    STUDYN("  RigidBodyNodeSpec::multiplyBySystemJacobianTranspose tip-to-base ~J=~H*Phi");
     const SpatialVec& in  = X[getNodeNum()];
     Vec<dof>&         out = Vec<dof>::updAs(&JtX[getUIndex()]);
     SpatialVec&       z   = zTmp[getNodeNum()];
@@ -1007,6 +991,7 @@ RigidBodyNodeSpec<dof, noR_FM, noX_MB, noR_PF>::calcEquivalentJointForces(
     SpatialVec*                 allZ,
     Real*                       jointForces) const 
 {
+    STUDYN("  RigidBodyNodeSpec::calcEquivalentJointForces tip-to-base -> z,eps ( ~H*Phi*(F-(MA+b)) )");
     const SpatialVec& myBodyForce  = bodyForces[nodeNum];
     SpatialVec&       z            = allZ[nodeNum];
     Vec<dof>&         eps          = toU(jointForces);

@@ -833,6 +833,8 @@ void MobilizedBodyImpl::realizeInstance(const SBStateDigest& sbs) const {
 //                               REALIZE TIME
 //------------------------------------------------------------------------------
 void MobilizedBodyImpl::realizeTime(const SBStateDigest& sbs) const {
+    STUDYN("  MobilizedBodyImpl::realizeTime");
+
     const MobilizedBodyIndex      mbx       = getMyMobilizedBodyIndex();
     const SBInstanceVars&         iv        = sbs.getInstanceVars();
     const SBInstanceCache&        ic        = sbs.getInstanceCache();
@@ -881,6 +883,8 @@ void MobilizedBodyImpl::realizePosition(const SBStateDigest& sbs) const {
     // Prescribed u may be due to nonholonomic prescribed u, or to derivative
     // of holonomic prescribed q, or to a lock(Velocity).
     if (instInfo.uMethod==Motion::Prescribed) {
+        STUDYN("  MobilizedBodyImpl::realizePosition Motion::Prescribed ");
+
         const SBModelCache&         mc        = sbs.getModelCache();
         const SBModelPerMobodInfo&  modelInfo = mc.getMobodModelInfo(mbx);
         const int                   nu        = modelInfo.nUInUse;
@@ -946,6 +950,8 @@ void MobilizedBodyImpl::realizeDynamics(const SBStateDigest& sbs) const {
     // derivative of nonholonomic prescribed u, or to 2nd derivative
     // of holonomic prescribed q, or to a lock(Acceleration).
     if (instInfo.udotMethod==Motion::Prescribed) {
+        STUDYN("  MobilizedBodyImpl::realizeDynamics Motion::Prescribed ");
+
 
         const SBModelCache&         mc        = sbs.getModelCache();
         const SBModelPerMobodInfo&  modelInfo = mc.getMobodModelInfo(mbx);
