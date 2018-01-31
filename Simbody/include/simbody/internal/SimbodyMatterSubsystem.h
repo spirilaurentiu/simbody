@@ -32,6 +32,15 @@
 #include <vector>
 #include <iostream>
 
+#ifndef DEBUG_STUDY
+#define DEBUG_STUDY
+#endif
+
+#ifdef DEBUG_STUDY
+#define STUDY(x)  printf("%s", x)
+#define STUDYN(x) printf("%s\n", x)
+#endif
+
 class SimbodyMatterSubsystemRep;
 
 namespace SimTK {

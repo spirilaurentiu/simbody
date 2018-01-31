@@ -688,6 +688,7 @@ int SimbodyMatterSubsystemRep::realizeSubsystemModelImpl(State& s) const {
 
 int SimbodyMatterSubsystemRep::
 realizeSubsystemInstanceImpl(const State& s) const {
+    STUDYN("SimbodyMatterSubsystemRep::realizeSubsystemInstanceImpl");
     SimTK_STAGECHECK_GE_ALWAYS(getStage(s), Stage(Stage::Instance).prev(), 
         "SimbodyMatterSubsystem::realizeInstance()");
 
