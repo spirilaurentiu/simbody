@@ -1435,6 +1435,14 @@ void calcDetM(const State&    state,
     Vector&                   MinvV,
     Real*                     detM) const;
 
+/**
+The results will be put in MinvV
+**/
+void calcFixmanTorque(const State&    state,
+    const Vector&             v,
+    Vector&                   MinvV,
+    Real*                     detM) const;
+
 
 /** This operator explicitly calculates the n X n mass matrix M. Note that this
 is inherently an O(n^2) operation since the mass matrix has n^2 elements 

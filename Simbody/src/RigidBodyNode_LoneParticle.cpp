@@ -430,6 +430,55 @@ void calcDetMPass2Outward(
 }
 
 
+// Note that we're not setting z temporaries here; you can't count on that as
+// a side effect the M^-1*f kernel.
+void calcFixmanTorquePass1Inward(
+        const SBInstanceCache&                  ic,
+        const SBTreePositionCache&              pc,
+        const SBArticulatedBodyInertiaCache&    abc,
+        //const SBDynamicsCache&                  dc,
+        const Real*                             jointForces,
+        SpatialVec*                             allZ,
+        SpatialVec*                             allZPlus,
+        Real*                                   allEpsilon,
+        Real*                                   detM) const 
+{
+    if (isUDotKnown(ic)) // prescribed
+        return;
+
+    // We promised not to look at f if it is part of f_p (prescribed).
+    const Vec3& f     = Vec3::getAs(&jointForces[uIndex]);
+    Vec3&       eps   = Vec3::updAs(&allEpsilon[uIndex]);
+
+    //eps = f;
+}
+
+// Outward pass must set A_GB properly so it can be propagated
+// to children.
+void calcFixmanTorquePass2Outward(
+        const SBInstanceCache&                  ic,
+        const SBTreePositionCache&              pc,
+        const SBArticulatedBodyInertiaCache&    abc,
+        //const SBDynamicsCache&                  dc,
+        const Real*                             allEpsilon,
+        SpatialVec*                             allA_GB,
+        Real*                                   allUDot, 
+        Real*                                   detM) const 
+{
+    const bool isPrescribed = isUDotKnown(ic);
+    const Vec3& eps = Vec3::getAs(&allEpsilon[uIndex]);
+    SpatialVec& A_GB = allA_GB[nodeNum];
+    Vec3&       udot = Vec3::updAs(&allUDot[uIndex]);
+
+    //if (isPrescribed) {
+    //    udot = 0;
+    //    A_GB = SpatialVec(Vec3(0), Vec3(0));
+    //} else {
+    //    udot = eps/getMass();
+    //    A_GB = SpatialVec(Vec3(0), udot);
+    //}
+}
+
 
 // Also serves as pass 1 for inverse dynamics.
 void calcBodyAccelerationsFromUdotOutward(

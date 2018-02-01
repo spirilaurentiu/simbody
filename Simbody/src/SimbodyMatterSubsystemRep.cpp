@@ -5508,7 +5508,7 @@ void SimbodyMatterSubsystemRep::multiplyBySqrtMInv(const State& s,
 
 
 //==============================================================================
-//                               CALC DET M INVERSE ?? 
+//                               CALC DET M 
 //==============================================================================
 // Calculate udot = M^-1 f. We also get spatial accelerations A_GB for 
 // each body as a side effect.
@@ -5519,7 +5519,7 @@ void SimbodyMatterSubsystemRep::calcDetM(const State& s,
     Vector&                                           MInvf,
     Real*                                             detM) const 
 {
-    STUDYN("SimbodyMatterSubsystemRep::calcDetM tip-to-base");
+    STUDYN("SimbodyMatterSubsystemRep::calcDetM base-to-tip");
     const SBInstanceCache&                  ic  = getInstanceCache(s);
     const SBTreePositionCache&              tpc = getTreePositionCache(s);
     //const SBDynamicsCache&                  dc  = getDynamicsCache(s);
@@ -5564,6 +5564,60 @@ void SimbodyMatterSubsystemRep::calcDetM(const State& s,
 }
 //.............................    CALC DET M  ...............................
 
+
+//==============================================================================
+//                               CALC FIXMAN TORQUE 
+//==============================================================================
+// Calculate udot = M^-1 f. We also get spatial accelerations A_GB for 
+// each body as a side effect.
+// This Subsystem must already be realized through Dynamics stage.
+// All vectors must use contiguous storage.
+void SimbodyMatterSubsystemRep::calcFixmanTorque(const State& s,
+    const Vector&                                      f,
+    Vector&                                            MInvf,
+    Real*                                              detM) const 
+{
+    STUDYN("SimbodyMatterSubsystemRep::calcFixmanTorque tip-to-base");
+    const SBInstanceCache&                  ic  = getInstanceCache(s);
+    const SBTreePositionCache&              tpc = getTreePositionCache(s);
+    //const SBDynamicsCache&                  dc  = getDynamicsCache(s);
+    const SBArticulatedBodyInertiaCache&    abc = getArticulatedBodyInertiaCache(s);
+
+    const int nb = getNumBodies();
+    const int nu = getNU(s);
+
+    int i, j, k;
+
+    assert(f.size() == nu);
+
+    MInvf.resize(nu);
+    if (nu==0)
+        return;
+
+    assert(f.hasContiguousData());
+    assert(MInvf.hasContiguousData());
+
+    // Temporaries
+    Array_<Real>        eps(nu);
+    Array_<SpatialVec>  z(nb), zPlus(nb), A_GB(nb);
+
+    // Point to raw data of input arguments.
+    const Real* fPtr     = &f[0];       
+    Real*       MInvfPtr = &MInvf[0];
+
+    for(int i=0; i<nu; i++){eps[i] = fPtr[i];}
+
+    *detM = 1.0;
+    for (int i=0 ; i<(int)rbNodeLevels.size() ; i++){
+        for (int j=0 ; j<(int)rbNodeLevels[i].size() ; j++) {
+            const RigidBodyNode& node = *rbNodeLevels[i][j];
+            node.calcFixmanTorquePass2Outward(ic,tpc,abc,//dc, 
+                eps.cbegin(), A_GB.begin(), MInvfPtr, detM);
+        }
+    }
+
+}
+//.............................    CALC DET M  ...............................
 
 
 

@@ -704,6 +704,77 @@ RigidBodyNodeSpec<dof, noR_FM, noX_MB, noR_PF>::calcDetMPass2Outward(
 }
 
 
+// Pass 1 of calcFixmanTorque , to be called from tip to base.
+template<int dof, bool noR_FM, bool noX_MB, bool noR_PF> void
+RigidBodyNodeSpec<dof, noR_FM, noX_MB, noR_PF>::calcFixmanTorquePass1Inward(
+    const SBInstanceCache&                  ic,
+    const SBTreePositionCache&              pc,
+    const SBArticulatedBodyInertiaCache&    abc,
+    const SBDynamicsCache&                  dc,
+    const Real*                             jointForces,
+    SpatialVec*                             allZ,
+    SpatialVec*                             allZPlus,
+    Real*                                   allEpsilon,
+    Real*                                   detM) const
+{
+    STUDYN("  RigidBodyNodeSpec::calcFixmanTorquePass1Inward tip-to-base ");
+    const Vec<dof>&   f     = fromU(jointForces);
+    SpatialVec&       z     = allZ[nodeNum];
+    SpatialVec&       zPlus = allZPlus[nodeNum];
+    Vec<dof>&         eps   = toU(allEpsilon);
+
+    const bool isPrescribed = isUDotKnown(ic);
+    const HType&              H = getH(pc);
+    const HType&              G = getG(abc);
+
+    z = 0;
+
+}
+
+
+// Pass 2 of calcFixmanTorque.
+// Base to tip: temp allA_GB does not need to be initialized before
+// beginning the iteration.
+template<int dof, bool noR_FM, bool noX_MB, bool noR_PF> void 
+RigidBodyNodeSpec<dof, noR_FM, noX_MB, noR_PF>::calcFixmanTorquePass2Outward(
+    const SBInstanceCache&                  ic,
+    const SBTreePositionCache&              pc,
+    const SBArticulatedBodyInertiaCache&    abc,
+    const SBDynamicsCache&                  dc,
+    const Real*                             allEpsilon,
+    SpatialVec*                             allA_GB,
+    Real*                                   allUDot,
+    Real*                                   detM) const
+{
+    STUDYN("  RigidBodyNodeSpec::calcFixmanTorquePass2Outward base-to-tip");
+    const Vec<dof>& eps  = fromU(allEpsilon);
+    SpatialVec&     A_GB = allA_GB[nodeNum];
+    Vec<dof>&       udot = toU(allUDot); // pull out this node's udot
+
+    const bool isPrescribed = isUDotKnown(ic);
+    const HType&        H   = getH(pc);
+    const PhiMatrix&    phi = getPhi(pc);
+    const Mat<dof,dof>& DI  = getDI(abc);
+    const Mat<dof,dof>& D  = getD(abc);
+    const HType&        G   = getG(abc);
+
+    SpatialMat Y = getY(dc);
+    ArticulatedInertia& P = getP(abc);
+    SpatialMat PY = P*Y;
+    Mat33 Q11 = PY(0,0);
+    Mat33 Q22 = PY(2,2);
+    Mat33 A = Q11 + Q22;
+    if(H[0].norm()){
+        h = H[0];
+    }else{
+        h = H[1];
+    }
+    Mat33 B = A - ~A;
+    Vec3 FofA = Vec3(B(3,2), B(1,3), B(2,1));
+    std::cout << "Fixman torque: " << h.dot(FofA) << std::endl;
+
+}
+
 
 
 

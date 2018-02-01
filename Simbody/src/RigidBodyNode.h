@@ -586,6 +586,27 @@ virtual void calcDetMPass2Outward(
     Real*                                   allUDot,
     Real*                                   detM) const=0;
 
+virtual void calcFixmanTorquePass1Inward(
+    const SBInstanceCache&                  ic,
+    const SBTreePositionCache&              pc,
+    const SBArticulatedBodyInertiaCache&    abc,
+    //const SBDynamicsCache&                  dc,
+    const Real*                             f,
+    SpatialVec*                             allZ,
+    SpatialVec*                             allGepsilon,
+    Real*                                   allEpsilon,
+    Real*                                   detM) const=0;
+
+virtual void calcFixmanTorquePass2Outward(
+    const SBInstanceCache&                  ic,
+    const SBTreePositionCache&              pc,
+    const SBArticulatedBodyInertiaCache&    abc,
+    //const SBDynamicsCache&                  dc,
+    const Real*                             epsilonTmp,
+    SpatialVec*                             allA_GB,
+    Real*                                   allUDot,
+    Real*                                   detM) const=0;
+
 
 
 // Also serves as pass 1 for inverse dynamics.
