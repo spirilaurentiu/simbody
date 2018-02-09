@@ -5577,10 +5577,12 @@ void SimbodyMatterSubsystemRep::calcFixmanTorque(const State& s,
     Vector&                                            MInvf,
     Real*                                              detM) const 
 {
-    STUDYN("SimbodyMatterSubsystemRep::calcFixmanTorque tip-to-base");
+    STUDYN("SimbodyMatterSubsystemRep::calcFixmanTorque base-to-tip");
+    realizeY(s); // Need this
+
     const SBInstanceCache&                  ic  = getInstanceCache(s);
     const SBTreePositionCache&              tpc = getTreePositionCache(s);
-    //const SBDynamicsCache&                  dc  = getDynamicsCache(s);
+    const SBDynamicsCache&                  dc  = getDynamicsCache(s);
     const SBArticulatedBodyInertiaCache&    abc = getArticulatedBodyInertiaCache(s);
 
     const int nb = getNumBodies();
@@ -5611,7 +5613,7 @@ void SimbodyMatterSubsystemRep::calcFixmanTorque(const State& s,
     for (int i=0 ; i<(int)rbNodeLevels.size() ; i++){
         for (int j=0 ; j<(int)rbNodeLevels[i].size() ; j++) {
             const RigidBodyNode& node = *rbNodeLevels[i][j];
-            node.calcFixmanTorquePass2Outward(ic,tpc,abc,//dc, 
+            node.calcFixmanTorquePass2Outward(ic,tpc,abc,dc, 
                 eps.cbegin(), A_GB.begin(), MInvfPtr, detM);
         }
     }

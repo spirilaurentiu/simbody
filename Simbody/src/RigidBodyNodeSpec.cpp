@@ -758,20 +758,50 @@ RigidBodyNodeSpec<dof, noR_FM, noX_MB, noR_PF>::calcFixmanTorquePass2Outward(
     const Mat<dof,dof>& D  = getD(abc);
     const HType&        G   = getG(abc);
 
-    SpatialMat Y = getY(dc);
-    ArticulatedInertia& P = getP(abc);
-    SpatialMat PY = P*Y;
-    Mat33 Q11 = PY(0,0);
-    Mat33 Q22 = PY(2,2);
-    Mat33 A = Q11 + Q22;
-    if(H[0].norm()){
-        h = H[0];
-    }else{
-        h = H[1];
-    }
-    Mat33 B = A - ~A;
-    Vec3 FofA = Vec3(B(3,2), B(1,3), B(2,1));
-    std::cout << "Fixman torque: " << h.dot(FofA) << std::endl;
+            SpatialMat Y = getY(dc);
+            const ArticulatedInertia& P = getP(abc);
+            std::cout << "ArticulatedInertia P: " << std::endl;
+            std::cout << P.toSpatialMat() << std::endl;
+            SimTK::SpatialMat PY = P.toSpatialMat() * Y;
+            std::cout << "SpatialMat PY: " << std::endl;
+            std::cout << PY << std::endl;
+            SimTK::Mat33 Q11 = PY(0,0);
+            SimTK::Mat33 Q22 = PY(1,1);
+            SimTK::Mat33 A = Q11 + Q22;
+            std::cout << "Q11, Q22 and A  = Q11 + Q22" << std::endl;
+            std::cout << Q11 << std::endl;
+            std::cout << Q22 << std::endl;
+            std::cout << A << std::endl;
+            SpatialVec HCol;
+            SimTK::Vec3 h;
+            for(int j=0; j<dof; j++){
+                HCol = SpatialVec(H(0,j), H(1,j));
+                //if(HCol[0].norm()){
+                    h = HCol[0];
+                //}else{
+                //    h = HCol[1];
+                //}
+                SimTK::Mat33 B = A - ~A;
+                std::cout << "B = A - ~A:" << std::endl;
+                std::cout << B << std::endl;
+                SimTK::Vec3 FofA = SimTK::Vec3(B(2,1), B(0,2), B(1,0));
+                udot[j] = SimTK::dot(h, FofA) ;
+                std::cout << "Fixman torque "<< j << " : " << udot[j] << std::endl;
+            }
+
+
+    //SpatialMat PY = P*Y;
+    //Mat33 Q11 = PY(0,0);
+    //Mat33 Q22 = PY(2,2);
+    //Mat33 A = Q11 + Q22;
+    //if(H[0].norm()){
+    //    h = H[0];
+    //}else{
+    //    h = H[1];
+    //}
+    //Mat33 B = A - ~A;
+    //Vec3 FofA = Vec3(B(3,2), B(1,3), B(2,1));
+    //std::cout << "Fixman torque: " << h.dot(FofA) << std::endl;
 
 }
 
