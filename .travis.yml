@@ -7,21 +7,27 @@
 sudo: required
 dist: trusty
 language: cpp
+
+# For thread_local support on macOS, we require xcode8 or greater.
+# Before 2018, xcode7 was the default. Now that xcode8.3 is the default,
+# we no longer need to specify an osx_image.
+# https://docs.travis-ci.com/user/reference/osx/#OS-X-Version
+# osx_image: xcode8
     
 matrix:
   include:
     - os: linux
       compiler: clang
-      env: BTYPE=RelWithDebInfo COV=OFF DEPLOY=yes
+      env: BTYPE=Release COV=OFF DEPLOY=yes
     - os: linux
       compiler: gcc
-      env: BTYPE=Release        COV=OFF DEPLOY=no
+      env: BTYPE=Release COV=OFF DEPLOY=no
     - os: linux
       compiler: gcc
-      env: BTYPE=Debug          COV=ON  DEPLOY=yes
+      env: BTYPE=Debug   COV=ON  DEPLOY=yes
     - os: osx
       compiler: clang
-      env: BTYPE=RelWithDebInfo COV=OFF DEPLOY=yes
+      env: BTYPE=Release COV=OFF DEPLOY=yes
 
 addons:
   # To avoid an interactive prompt when uploading binaries to sourceforge.
