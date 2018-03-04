@@ -15,7 +15,7 @@ if(BUILD_UNVERSIONED_LIBRARIES)
     set_target_properties(${SHARED_TARGET} PROPERTIES
         PROJECT_LABEL "Code - ${SHARED_TARGET}"
         SOVERSION ${SIMBODY_SONAME_VERSION})
-
+    
     # install library; on Windows .dll's go in bin directory
 
     install(TARGETS ${SHARED_TARGET} EXPORT SimbodyTargets
@@ -53,7 +53,7 @@ if(BUILD_VERSIONED_LIBRARIES)
     set_target_properties(${SHARED_TARGET_VN} PROPERTIES
         PROJECT_LABEL "Code - ${SHARED_TARGET_VN}"
         SOVERSION ${SIMBODY_SONAME_VERSION})
-
+           
     # install library; on Windows .dll's go in bin directory
 
     install(TARGETS ${SHARED_TARGET_VN} EXPORT SimbodyTargets
