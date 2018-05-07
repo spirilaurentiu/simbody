@@ -758,110 +758,46 @@ RigidBodyNodeSpec<dof, noR_FM, noX_MB, noR_PF>::calcFixmanTorquePass2Outward(
     const Mat<dof,dof>& D  = getD(abc);
     const HType&        G   = getG(abc);
 
-            std::cout << "calcFixmanTorquePass2Outward Parent node: " 
-                << parent->getNodeNum() << " this node: " << getNodeNum() << " PhiMatrix phi " << std::endl;
-            std::cout << phi.toSpatialMat() << std::endl;
+    SpatialMat Y = getY(dc);
+    const ArticulatedInertia& P = getP(abc);
+    SimTK::SpatialMat PY = P.toSpatialMat() * Y;
+    SimTK::Mat33 Q11 = PY(0,0);
+    SimTK::Mat33 Q22 = PY(1,1);
+    SimTK::Mat33 A = Q11 + Q22;
 
-            SpatialMat Y = getY(dc);
-            const ArticulatedInertia& P = getP(abc);
-            std::cout << "calcFixmanTorquePass2Outward ArticulatedInertia P: " << std::endl;
-            std::cout << P.toSpatialMat() << std::endl;
-            std::cout << "calcFixmanTorquePass2Outward Y: " << std::endl;
-            std::cout << Y << std::endl;
-            SimTK::SpatialMat PY = P.toSpatialMat() * Y;
-            std::cout << "calcFixmanTorquePass2Outward SpatialMat PY: " << std::endl;
-            std::cout << PY << std::endl;
-            SimTK::Mat33 Q11 = PY(0,0);
-            SimTK::Mat33 Q22 = PY(1,1);
-            SimTK::Mat33 A = Q11 + Q22;
-            std::cout << "calcFixmanTorquePass2Outward Q11, Q22 and A  = Q11 + Q22" << std::endl;
-            std::cout << Q11 << std::endl;
-            std::cout << Q22 << std::endl;
-            std::cout << A << std::endl;
-            SpatialVec HCol;
-//            SimTK::Vec3 h;
-//            for(int j=0; j<dof; j++){
-//                HCol = SpatialVec(H(0,j), H(1,j));
-//                //if(HCol[0].norm()){
-//                    h = HCol[0];
-//                //}else{
-//                //    h = HCol[1];
-//                //}
-                //SimTK::Mat33 B = A - ~A;
-                SimTK::Mat33 B = A - A.transpose();
-                std::cout << "calcFixmanTorquePass2Outward B = A - AT:" << std::endl;
-                std::cout << B << std::endl;
-//                std::cout << "h(i) = HCol = SpatialVec(H(0,j), H(1,j)) = " << h << std::endl;
-                SimTK::Vec3 FofA = SimTK::Vec3(B(2,1), B(0,2), B(1,0));
-                std::cout << "calcFixmanTorquePass2Outward Fixman torque FofA " << FofA << std::endl;
-//                udot[j] = SimTK::dot(h, FofA) ;
-//                std::cout << "Fixman torque "<< j << " : " << (-1) * udot[j] << std::endl;
-//            }
+    Vec3 h_G;
 
-    const Rotation& R_GP = getX_GP(pc).R(); // parent orientation in ground
-    const Vec3&     p_FM   = getX_FM(pc).p();
-    const Rotation& R_FM   = getX_FM(pc).R();
-    const Vec4 h4 = R_FM.convertRotationToAngleAxis();
-    Vec3 h, h_G;
-    Vec3 u, u_G;
-
-    h[0] = h4[1];
-    h[1] = h4[2];
-    h[2] = h4[3];
-
-    h_G = R_GP * h;
-
-    u[0] = R_FM[2][1] - R_FM[1][2];    
-    u[1] = R_FM[0][2] - R_FM[2][0];    
-    u[2] = R_FM[1][0] - R_FM[0][1];
-
-    u_G = R_GP * u;
-
-    u = u.normalize();
-
-    std::cout << "calcFixmanTorquePass2Outward Fixman torque h4 " << h4 << std::endl;
-    std::cout << "calcFixmanTorquePass2Outward Fixman torque h " << h << std::endl;
-    std::cout << "calcFixmanTorquePass2Outward Fixman torque normalized u " << u << std::endl;
-    std::cout << "calcFixmanTorquePass2Outward Fixman torque unnormalized u " << u << std::endl;
-
-    // Eq 4.17 for h
-    SimTK::Mat33 HBold00 = SimTK::crossMat(h);
-    SimTK::SpatialMat HBold(0);
-    HBold[0][0] = HBold00;
-    HBold[1][1] = HBold00;
-    std::cout << "calcFixmanTorquePass2Outward HBold h " << HBold << std::endl;
-
-    SimTK::SpatialMat PYHBold = PY * HBold;
-
-    SimTK::Real trPYHBold = 0.0;
-    for(unsigned int i = 0; i < 2; i++){
-        for(unsigned int k = 0; k < 3; k++){
-            trPYHBold += PYHBold[i][i][k][k];
+    SpatialVec HCol;
+    for(int j=0; j<dof; j++){
+        HCol = SpatialVec(H(0,j), H(1,j));
+        h_G[0] = HCol[0][0];
+        h_G[1] = HCol[0][1];
+        h_G[2] = HCol[0][2];
+        if(h_G.norm() > SimTK::TinyReal){
+            h_G = h_G.normalize();
         }
-    }
-    std::cout << "calcFixmanTorquePass2Outward Fixman torque trPYHBold h " << trPYHBold << std::endl;
-    // Eq 4.17 end
-    // Eq 4.17 for u
-    HBold00 = SimTK::crossMat(u);
-    HBold = SimTK::SpatialMat(0);
-    HBold[0][0] = HBold00;
-    HBold[1][1] = HBold00;
-    std::cout << "calcFixmanTorquePass2Outward HBold u " << HBold << std::endl;
 
-    PYHBold = PY * HBold;
+        SimTK::Mat33 B = A - A.transpose();
+        SimTK::Vec3 FofA = SimTK::Vec3(B(2,1), B(0,2), B(1,0));
 
-    trPYHBold = 0.0;
-    for(unsigned int i = 0; i < 2; i++){
-        for(unsigned int k = 0; k < 3; k++){
-            trPYHBold += PYHBold[i][i][k][k];
-        }
-    }
-    std::cout << "calcFixmanTorquePass2Outward Fixman torque trPYHBold u " << trPYHBold << std::endl;
-    // Eq 4.17 end
+        // Eq 4.17 for h
+        //SimTK::Mat33 HBold00 = SimTK::crossMat(h_G);
+        //SimTK::SpatialMat HBold(0);
+        //HBold[0][0] = HBold00;
+        //HBold[1][1] = HBold00;
 
-    // Store result
-    udot[0] = SimTK::dot((-1)*h, FofA) ;
-    std::cout << "calcFixmanTorquePass2Outward Fixman torque dot(h,FofA) " << udot[0] << std::endl;
+        //SimTK::SpatialMat PYHBold = PY * HBold;
+
+        //SimTK::Real trPYHBold = 0.0;
+        //for(unsigned int i = 0; i < 2; i++){
+        //    for(unsigned int k = 0; k < 3; k++){
+        //        trPYHBold += PYHBold[i][i][k][k];
+        //    }
+        //}
+
+        // Store result
+        udot[j] = SimTK::dot((-1)*h_G, FofA) ;
+    } // for dof
 
 }
 
