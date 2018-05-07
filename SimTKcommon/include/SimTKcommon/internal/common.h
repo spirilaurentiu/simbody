@@ -98,7 +98,7 @@ or any other Index type to an argument expecting a certain Index type. **/
  * This compile-time constant determines the default precision used everywhere
  * in %SimTK Core code. Wherever a SimTK::Real, SimTK::Vector, SimTK::Matrix,
  * etc. appears with no precision specified, it will have this underlying precision.
- * We use 1==float, 2==double, 4==long double. Any other value will cause
+ * We use 1==float, 2==double. Any other value will cause
  * a compile time error. The default is 2, i.e., double precision.
  */
 #ifndef SimTK_DEFAULT_PRECISION
@@ -111,9 +111,6 @@ or any other Index type to an argument expecting a certain Index type. **/
 #elif (SimTK_DEFAULT_PRECISION == 2)
 /** This type is for use in C; in C++ use SimTK::Real instead. */
     typedef double SimTK_Real;
-#elif (SimTK_DEFAULT_PRECISION == 4)
-/** This type is for use in C; in C++ use SimTK::Real instead. */
-    typedef long double SimTK_Real;
 #else
     #error ILLEGAL VALUE FOR DEFAULT PRECISION
 #endif
@@ -171,15 +168,18 @@ or any other Index type to an argument expecting a certain Index type. **/
 
 
     /* Until VS2015 struct timespec was missing from <ctime> so is faked here 
-    if needed. However, note that it is also defined in the pthread.h header on 
-    Windows, so the guard symbol must match here to avoid a duplicate declaration. 
+    if needed. When Simbody used pthreads and provided its own pthread.h for
+    Windows, we had to avoid a duplicate declaration with timespec in pthread.h
+    via the HAVE_STRUCT_TIMESPEC guard. In 2018, we removed pthread.h, but we
+    left in the HAVE_STRUCT_TIMESPEC guard in case a third party defines
+    timespec.
     TODO: there is a potential problem here since VS2015's struct timespec 
     doesn't appear to match pthread's definition. */
     #ifndef HAVE_STRUCT_TIMESPEC
     #define HAVE_STRUCT_TIMESPEC 1
         #if _MSC_VER < 1900
         struct timespec {
-            long tv_sec; /*TODO: should be time_t but must fix in pthreads too*/
+            long tv_sec; /* TODO(sherm1,chrisdembia) should be time_t? */
             long tv_nsec;
         };
         #endif
@@ -749,7 +749,6 @@ types to specialize the IsFloatingType struct template for those types. **/
 
 SimTK_SPECIALIZE_FLOATING_TYPE(float); 
 SimTK_SPECIALIZE_FLOATING_TYPE(double); 
-SimTK_SPECIALIZE_FLOATING_TYPE(long double); 
 
 /** Compile-time type test: is this the void type?. **/
 template <class T> struct IsVoidType {
