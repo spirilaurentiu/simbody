@@ -99,6 +99,7 @@ TimeStepperRep::TimeStepperRep(TimeStepper* handle, const System& system)
     reportAllSignificantStates(false) {}
 
 Integrator::SuccessfulStepStatus TimeStepperRep::stepTo(Real time) {
+
     // Handler is allowed to throw an exception if it fails since we don't
     // have a way to recover.
     HandleEventsOptions handleOpts(integ->getConstraintToleranceInUse());
@@ -200,6 +201,7 @@ Integrator::SuccessfulStepStatus TimeStepperRep::stepTo(Real time) {
             default: assert(!"Unrecognized return from stepTo()");
         }
         integ->reinitialize(lowestModified, shouldTerminate);
+
         if (reportAllSignificantStates)
             return status;
     }

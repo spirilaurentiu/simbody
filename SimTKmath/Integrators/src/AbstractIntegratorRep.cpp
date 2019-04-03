@@ -214,6 +214,7 @@ bool AbstractIntegratorRep::attemptDAEStep
 //==============================================================================
 Integrator::SuccessfulStepStatus 
 AbstractIntegratorRep::stepTo(Real reportTime, Real scheduledEventTime) {
+
     try {
       assert(initialized);
       assert(reportTime >= getState().getTime());
@@ -245,6 +246,10 @@ AbstractIntegratorRep::stepTo(Real reportTime, Real scheduledEventTime) {
 
       bool wasLastStep=false;
       for(;;) { // MAIN STEPPING LOOP
+
+// TIME START -----------------------------------------------------------------
+std::chrono::steady_clock::time_point start0 = std::chrono::steady_clock::now();
+// TIME START -----------------------------------------------------------------
 
           // At this point the system's advancedState is the one to which
           // we last advanced successfully. It has been realized through the
@@ -407,11 +412,22 @@ AbstractIntegratorRep::stepTo(Real reportTime, Real scheduledEventTime) {
           // variables. Other than those cache entries, no other calculations 
           // are invalidated.
           updAdvancedState().autoUpdateDiscreteVariables();
-         
+
+// TIME STOP ..........................................................................................................................
+std::chrono::steady_clock::time_point end0 = std::chrono::steady_clock::now();
+std::cout << "AbstractIntegratorRep end0 - start0 "<< std::chrono::duration_cast<std::chrono::microseconds >(end0 - start0).count() << " us.\n";
+// TIME STOP ==========================================================================================================================         
+
           //---------------- TAKE ONE STEP --------------------
           // Now take a step and see whether an event occurred.
           bool eventOccurred = takeOneStep(tMax, reportTime);
           //---------------------------------------------------
+
+
+// TIME STOP ..........................................................................................................................
+std::chrono::steady_clock::time_point end1 = std::chrono::steady_clock::now();
+std::cout << "AbstractIntegratorRep end1 - start0 "<< std::chrono::duration_cast<std::chrono::microseconds >(end1 - start0).count() << " us.\n";
+// TIME STOP ==========================================================================================================================         
 
           ++internalStepsTaken;
           ++statsStepsTaken;
