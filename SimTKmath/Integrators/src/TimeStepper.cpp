@@ -124,10 +124,19 @@ Integrator::SuccessfulStepStatus TimeStepperRep::stepTo(Real time) {
         Real reportTime = std::min(nextScheduledReport, time);
         Real eventTime  = std::min(nextScheduledEvent,  time);
 
+// TIME START -----------------------------------------------------------------
+std::chrono::steady_clock::time_point start0 = std::chrono::steady_clock::now();
+// TIME START -----------------------------------------------------------------
+
         //---------------- take continuous step ----------------
         Integrator::SuccessfulStepStatus status = 
             integ->stepTo(reportTime, eventTime);
         //------------------------------------------------------
+
+// TIME STOP ..........................................................................................................................
+std::chrono::steady_clock::time_point end0 = std::chrono::steady_clock::now();
+std::cout << "TimeStepperRep::stepTo end0 - start0 "<< std::chrono::duration_cast<std::chrono::microseconds >(end0 - start0).count() << " us.\n";
+// TIME STOP ==========================================================================================================================
 
         Stage lowestModified = Stage::Report;
         bool shouldTerminate;
@@ -200,6 +209,12 @@ Integrator::SuccessfulStepStatus TimeStepperRep::stepTo(Real time) {
             }
             default: assert(!"Unrecognized return from stepTo()");
         }
+
+// TIME STOP ..........................................................................................................................
+std::chrono::steady_clock::time_point end1 = std::chrono::steady_clock::now();
+std::cout << "TimeStepperRep::stepTo end1 - start0 "<< std::chrono::duration_cast<std::chrono::microseconds >(end0 - start0).count() << " us.\n";
+// TIME STOP ==========================================================================================================================
+
         integ->reinitialize(lowestModified, shouldTerminate);
 
         if (reportAllSignificantStates)
