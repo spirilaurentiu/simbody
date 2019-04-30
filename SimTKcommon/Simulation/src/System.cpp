@@ -543,7 +543,11 @@ void System::Guts::realizeAcceleration(const State& s) const {
 //                              REALIZE REPORT
 //------------------------------------------------------------------------------
 void System::Guts::realizeReport(const State& s) const {
-    SimTK_STAGECHECK_GE_ALWAYS(s.getSystemStage(), Stage(Stage::Report).prev(), 
+        // TIME START -----------------------------------------------------------------
+        std::chrono::steady_clock::time_point start0 = std::chrono::steady_clock::now();
+        // TIME START -----------------------------------------------------------------
+
+        SimTK_STAGECHECK_GE_ALWAYS(s.getSystemStage(), Stage(Stage::Report).prev(),
         "System::Guts::realizeReport()");
     if (s.getSystemStage() < Stage::Report) {
         // Allow the subclass to do processing.
@@ -556,6 +560,10 @@ void System::Guts::realizeReport(const State& s) const {
 
         getRep().nRealizationsOfStage[Stage::Report]++; // mutable counter
     }
+        // TIME STOP ..........................................................................................................................
+        std::chrono::steady_clock::time_point end0 = std::chrono::steady_clock::now();
+        std::cout << "System::Guts::realizeReport end0 - start0 "<< std::chrono::duration_cast<std::chrono::microseconds >(end0 - start0).count() << " us.\n";
+        // TIME STOP ==========================================================================================================================
 }
 
 

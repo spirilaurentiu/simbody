@@ -125,7 +125,7 @@ Integrator::SuccessfulStepStatus TimeStepperRep::stepTo(Real time) {
         Real eventTime  = std::min(nextScheduledEvent,  time);
 
 // TIME START -----------------------------------------------------------------
-std::chrono::steady_clock::time_point start0 = std::chrono::steady_clock::now();
+//std::chrono::steady_clock::time_point start0 = std::chrono::steady_clock::now();
 // TIME START -----------------------------------------------------------------
 
         //---------------- take continuous step ----------------
@@ -134,8 +134,8 @@ std::chrono::steady_clock::time_point start0 = std::chrono::steady_clock::now();
         //------------------------------------------------------
 
 // TIME STOP ..........................................................................................................................
-std::chrono::steady_clock::time_point end0 = std::chrono::steady_clock::now();
-std::cout << "TimeStepperRep::stepTo end0 - start0 "<< std::chrono::duration_cast<std::chrono::microseconds >(end0 - start0).count() << " us.\n";
+//std::chrono::steady_clock::time_point end0 = std::chrono::steady_clock::now();
+//std::cout << "TimeStepperRep::stepTo end0 - start0 "<< std::chrono::duration_cast<std::chrono::microseconds >(end0 - start0).count() << " us.\n";
 // TIME STOP ==========================================================================================================================
 
         Stage lowestModified = Stage::Report;
@@ -211,8 +211,8 @@ std::cout << "TimeStepperRep::stepTo end0 - start0 "<< std::chrono::duration_cas
         }
 
 // TIME STOP ..........................................................................................................................
-std::chrono::steady_clock::time_point end1 = std::chrono::steady_clock::now();
-std::cout << "TimeStepperRep::stepTo end1 - start0 "<< std::chrono::duration_cast<std::chrono::microseconds >(end0 - start0).count() << " us.\n";
+//std::chrono::steady_clock::time_point end1 = std::chrono::steady_clock::now();
+//std::cout << "TimeStepperRep::stepTo end1 - start0 "<< std::chrono::duration_cast<std::chrono::microseconds >(end0 - start0).count() << " us.\n";
 // TIME STOP ==========================================================================================================================
 
         integ->reinitialize(lowestModified, shouldTerminate);

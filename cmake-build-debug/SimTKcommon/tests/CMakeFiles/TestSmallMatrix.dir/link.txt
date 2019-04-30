@@ -1,0 +1,1 @@
+/usr/bin/c++   -std=c++11 -g   -rdynamic CMakeFiles/TestSmallMatrix.dir/TestSmallMatrix.cpp.o  -o ../../TestSmallMatrix -Wl,-rpath,/home/pcuser/git2/gchmc/gmolmodel/molmodel_legacy/simbody/cmake-build-debug ../../libSimTKcommon_d.so.3.7 -lblas -llapack -lblas -llapack -lpthread -lrt -ldl -lm 

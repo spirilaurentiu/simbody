@@ -1,0 +1,1 @@
+/usr/bin/cc -g   -rdynamic CMakeFiles/pend_test.dir/pend_test.c.o  -o ../../../../../../pend_test -Wl,-rpath,/home/pcuser/git2/gchmc/gmolmodel/molmodel_legacy/simbody/cmake-build-debug ../../../../../../libSimTKmath_d.so.3.7 ../../../../../../libSimTKcommon_d.so.3.7 -lblas -llapack -lblas -llapack -lpthread -lrt -ldl -lm 

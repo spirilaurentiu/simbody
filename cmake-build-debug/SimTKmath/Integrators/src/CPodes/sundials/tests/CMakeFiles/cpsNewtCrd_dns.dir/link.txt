@@ -1,0 +1,1 @@
+/usr/bin/cc -g   -rdynamic CMakeFiles/cpsNewtCrd_dns.dir/cpsNewtCrd_dns.c.o  -o ../../../../../../cpsNewtCrd_dns -Wl,-rpath,/home/pcuser/git2/gchmc/gmolmodel/molmodel_legacy/simbody/cmake-build-debug ../../../../../../libSimTKmath_d.so.3.7 ../../../../../../libSimTKcommon_d.so.3.7 -lblas -llapack -lblas -llapack -lpthread -lrt -ldl -lm 

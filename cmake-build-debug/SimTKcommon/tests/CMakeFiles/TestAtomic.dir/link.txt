@@ -1,0 +1,1 @@
+/usr/bin/c++   -std=c++11 -g   -rdynamic CMakeFiles/TestAtomic.dir/TestAtomic.cpp.o  -o ../../TestAtomic -Wl,-rpath,/home/pcuser/git2/gchmc/gmolmodel/molmodel_legacy/simbody/cmake-build-debug ../../libSimTKcommon_d.so.3.7 -lblas -llapack -lblas -llapack -lpthread -lrt -ldl -lm 

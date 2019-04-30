@@ -1,0 +1,10 @@
+prefix=/usr/local
+libdir=${prefix}/lib
+includedir=${prefix}/include/simbody
+
+Name: simbody
+Description: Simbody Libraries
+Version: 3.7
+Requires:
+Libs: -L${libdir} -lSimTKsimbody -lSimTKmath -lSimTKcommon -llapack -lblas -lpthread -lrt -ldl -lm
+CFlags: -I${includedir}
